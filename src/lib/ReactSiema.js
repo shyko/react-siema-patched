@@ -190,6 +190,7 @@ class ReactSiema extends Component {
         this.drag.startX = e.touches[0].pageX;
         this.drag.startY = e.touches[0].pageY;
     }
+}
 
     onTouchEnd(e) {
       if (this.config.draggable) {
@@ -232,6 +233,7 @@ class ReactSiema extends Component {
         e.stopPropagation();
         this.pointerDown = true;
         this.drag.startX = e.pageX;
+      }
     }
 
     onMouseUp(e) {
