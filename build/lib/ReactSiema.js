@@ -361,7 +361,7 @@ ReactSiema.propTypes = {
     resizeDebounce: _propTypes2.default.number,
     duration: _propTypes2.default.number,
     easing: _propTypes2.default.string,
-    perPage: _propTypes2.default.number,
+    perPage: _propTypes2.default.oneOfType([_propTypes2.default.number, _propTypes2.default.object]),
     startIndex: _propTypes2.default.number,
     draggable: _propTypes2.default.bool,
     threshold: _propTypes2.default.number,
