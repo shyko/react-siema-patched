@@ -24,44 +24,43 @@ class ReactSiema extends Component {
         onChange: PropTypes.func,
     };
 
+    static defaultProps = {
+      resizeDebounce: 250,
+      duration: 200,
+      easing: 'ease-out',
+      perPage: 1,
+      startIndex: 0,
+      draggable: true,
+      threshold: 20,
+      loop: false,
+      onInit: () => {},
+      onChange: () => {},
+    };
+
     events = [
         'onTouchStart', 'onTouchEnd', 'onTouchMove', 'onMouseDown', 'onMouseUp', 'onMouseLeave', 'onMouseMove'
     ];
 
     constructor(props) {
-        super();
-        this.config = Object.assign({}, {
-            resizeDebounce: 250,
-            duration: 200,
-            easing: 'ease-out',
-            perPage: 1,
-            startIndex: 0,
-            draggable: true,
-            threshold: 20,
-            loop: false,
-            onInit: () => {},
-            onChange: () => {},
-        }, props);
-
+        super(props);
         this.events.forEach((handler) => {
             this[handler] = this[handler].bind(this);
         });
     }
 
     componentDidMount() {
-        this.config.selector = this.selector;
-        this.currentSlide = this.config.startIndex;
+        this.currentSlide = this.props.startIndex;
 
         this.init();
 
         this.onResize = debounce(() => {
             this.resize();
             this.slideToCurrent();
-        }, this.config.resizeDebounce);
+        }, this.props.resizeDebounce);
 
         window.addEventListener('resize', this.onResize);
 
-        if (this.config.draggable) {
+        if (this.props.draggable) {
             this.pointerDown = false;
             this.drag = {
                 startX: 0,
@@ -87,8 +86,8 @@ class ReactSiema extends Component {
 
         this.setStyle(this.sliderFrame, {
             width: `${(this.selectorWidth / this.perPage) * this.innerElements.length}px`,
-            webkitTransition: `all ${this.config.duration}ms ${this.config.easing}`,
-            transition: `all ${this.config.duration}ms ${this.config.easing}`
+            webkitTransition: `all ${this.props.duration}ms ${this.props.easing}`,
+            transition: `all ${this.props.duration}ms ${this.props.easing}`
         });
 
         for (let i = 0; i < this.innerElements.length; i++) {
@@ -98,7 +97,7 @@ class ReactSiema extends Component {
         }
 
         this.slideToCurrent();
-        this.config.onInit.call(this);
+        this.props.onInit.call(this);
     }
 
     setSelectorWidth() {
@@ -110,42 +109,42 @@ class ReactSiema extends Component {
     }
 
     resolveSlidesNumber() {
-        if (typeof this.config.perPage === 'number') {
-            this.perPage = this.config.perPage;
-        } else if (typeof this.config.perPage === 'object') {
+        if (typeof this.props.perPage === 'number') {
+            this.perPage = this.props.perPage;
+        } else if (typeof this.props.perPage === 'object') {
             this.perPage = 1;
-            for (let viewport in this.config.perPage) {
+            for (let viewport in this.props.perPage) {
                 if (window.innerWidth > viewport) {
-                    this.perPage = this.config.perPage[viewport];
+                    this.perPage = this.props.perPage[viewport];
                 }
             }
         }
     }
 
     prev() {
-        if (this.currentSlide === 0 && this.config.loop) {
+        if (this.currentSlide === 0 && this.props.loop) {
             this.currentSlide = this.innerElements.length - this.perPage;
         } else {
             this.currentSlide = Math.max(this.currentSlide - 1, 0);
         }
         this.slideToCurrent();
-        this.config.onChange.call(this);
+        this.props.onChange.call(this);
     }
 
     next() {
-        if (this.currentSlide === this.innerElements.length - this.perPage && this.config.loop) {
+        if (this.currentSlide === this.innerElements.length - this.perPage && this.props.loop) {
             this.currentSlide = 0;
         } else {
             this.currentSlide = Math.min(this.currentSlide + 1, this.innerElements.length - this.perPage);
         }
         this.slideToCurrent();
-        this.config.onChange.call(this);
+        this.props.onChange.call(this);
     }
 
     goTo(index) {
         this.currentSlide = Math.min(Math.max(index, 0), this.innerElements.length - 1);
         this.slideToCurrent();
-        this.config.onChange.call(this);
+        this.props.onChange.call(this);
     }
 
     slideToCurrent() {
@@ -154,9 +153,9 @@ class ReactSiema extends Component {
 
     updateAfterDrag() {
         const movement = this.drag.endX - this.drag.startX;
-        if (movement > 0 && Math.abs(movement) > this.config.threshold) {
+        if (movement > 0 && Math.abs(movement) > this.props.threshold) {
             this.prev();
-        } else if (movement < 0 && Math.abs(movement) > this.config.threshold) {
+        } else if (movement < 0 && Math.abs(movement) > this.props.threshold) {
             this.next();
         }
         this.slideToCurrent();
@@ -187,7 +186,7 @@ class ReactSiema extends Component {
     }
 
     onTouchStart(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.stopPropagation();
         this.pointerDown = true;
         this.drag.startX = e.touches[0].pageX;
@@ -196,12 +195,12 @@ class ReactSiema extends Component {
 }
 
     onTouchEnd(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.stopPropagation();
         this.pointerDown = false;
         this.setStyle(this.sliderFrame, {
-          webkitTransition: `all ${this.config.duration}ms ${this.config.easing}`,
-          transition: `all ${this.config.duration}ms ${this.config.easing}`
+          webkitTransition: `all ${this.props.duration}ms ${this.props.easing}`,
+          transition: `all ${this.props.duration}ms ${this.props.easing}`
         });
         if (this.drag.endX) {
             this.updateAfterDrag();
@@ -211,7 +210,7 @@ class ReactSiema extends Component {
     }
 
     onTouchMove(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.stopPropagation();
 
         if (this.drag.letItGo === null) {
@@ -222,8 +221,8 @@ class ReactSiema extends Component {
             this.drag.endX = e.touches[0].pageX;
 
             this.setStyle(this.sliderFrame, {
-                webkitTransition: `all 0ms ${this.config.easing}`,
-                transition: `all 0ms ${this.config.easing}`,
+                webkitTransition: `all 0ms ${this.props.easing}`,
+                transition: `all 0ms ${this.props.easing}`,
                 [transformProperty]: `translate3d(${(this.currentSlide * (this.selectorWidth / this.perPage) + (this.drag.startX - this.drag.endX)) * -1}px, 0, 0)`
             });
         }
@@ -231,7 +230,7 @@ class ReactSiema extends Component {
     }
 
     onMouseDown(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.preventDefault();
         e.stopPropagation();
         this.pointerDown = true;
@@ -240,13 +239,13 @@ class ReactSiema extends Component {
     }
 
     onMouseUp(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.stopPropagation();
         this.pointerDown = false;
         this.setStyle(this.sliderFrame, {
           cursor: '-webkit-grab',
-          webkitTransition: `all ${this.config.duration}ms ${this.config.easing}`,
-          transition: `all ${this.config.duration}ms ${this.config.easing}`
+          webkitTransition: `all ${this.props.duration}ms ${this.props.easing}`,
+          transition: `all ${this.props.duration}ms ${this.props.easing}`
         });
         if (this.drag.endX) {
             this.updateAfterDrag();
@@ -256,14 +255,14 @@ class ReactSiema extends Component {
     }
 
     onMouseMove(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         e.preventDefault();
         if (this.pointerDown) {
             this.drag.endX = e.pageX;
             this.setStyle(this.sliderFrame, {
                 cursor: '-webkit-grabbing',
-                webkitTransition: `all 0ms ${this.config.easing}`,
-                transition: `all 0ms ${this.config.easing}`,
+                webkitTransition: `all 0ms ${this.props.easing}`,
+                transition: `all 0ms ${this.props.easing}`,
                 [transformProperty]: `translate3d(${(this.currentSlide * (this.selectorWidth / this.perPage) + (this.drag.startX - this.drag.endX)) * -1}px, 0, 0)`
             });
         }
@@ -271,14 +270,14 @@ class ReactSiema extends Component {
     }
 
     onMouseLeave(e) {
-      if (this.config.draggable) {
+      if (this.props.draggable) {
         if (this.pointerDown) {
             this.pointerDown = false;
             this.drag.endX = e.pageX;
             this.setStyle(this.sliderFrame, {
                 cursor: '-webkit-grab',
-                webkitTransition: `all ${this.config.duration}ms ${this.config.easing}`,
-                transition: `all ${this.config.duration}ms ${this.config.easing}`
+                webkitTransition: `all ${this.props.duration}ms ${this.props.easing}`,
+                transition: `all ${this.props.duration}ms ${this.props.easing}`
             });
             this.updateAfterDrag();
             this.clearDrag();
