@@ -71,8 +71,22 @@ class ReactSiema extends Component {
         }
     }
 
-    componentDidUpdate() {
+    componentDidUpdate(prevProps) {
         this.init();
+        if (this.props.draggable !== prevProps.draggable) {
+          if (this.props.draggable) {
+            this.pointerDown = false;
+            this.drag = {
+              startX: 0,
+              endX: 0,
+              startY: 0,
+              letItGo: null
+            };
+          } else {
+            this.pointerDown = null;
+            this.drag = null;
+          }
+        }
     }
 
     componentWillUnmount() {
